@@ -35,6 +35,11 @@ const processDuration = (duration) => {
   width: 263px;
   height: 150px;
   position: relative;
+  cursor: pointer;
+  &:hover {
+    opacity: 0.8;
+    transition: opacity 0.2s ease-in-out;
+  }
   img {
     width: 100%;
     height: 100%;
