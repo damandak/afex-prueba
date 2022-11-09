@@ -207,7 +207,6 @@ function closeWarning() {
 
 // Play Video
 function playVideo(selectedVideo) {
-  console.log("play video");
   closeDescriptionModal();
   playableVideo.value = selectedVideo;
   activatePlayerModal.value = true;
