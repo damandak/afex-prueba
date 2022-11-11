@@ -1,7 +1,7 @@
 # afex-prueba
 
-Sitio web en Vue3 y Firebase desarrollado por Damir Mandakovic como prueba técnica para proceso de selección Afex Chile
-Vue3 and Firebase website developed by Damir Mandakovic for Afex Chile in recruitment process.
+- Sitio web en Vue3 y Firebase desarrollado por Damir Mandakovic como prueba técnica para proceso de selección Afex Chile
+- Vue3 and Firebase website developed by Damir Mandakovic for Afex Chile in recruitment process.
 
 Demo: https://damirmandakovic-afex-prueba.netlify.app/
 
