@@ -1,7 +1,7 @@
 <template>
   <div class="video-thumbnail">
     <img :src="video.thumbnail_medium" alt="video thumbnail" @click="$emit('descriptionModal', video)"/>
-    <div class="duration-container">
+    <div class="duration-container" v-if="video.platform === 'youtube'">
       <p>{{ processDuration(video.duration) }}</p>
     </div>
     <!--Delete Button-->

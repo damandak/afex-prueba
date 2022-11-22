@@ -67,6 +67,12 @@ var activatePlayerModal = ref(false);
 var activateWarning = ref(false);
 
 const yt_url = "https://www.googleapis.com/youtube/v3/videos?";
+const vm_url = "https://api.vimeo.com/videos/";
+const client_id = "28c70040d60b435f4e44ddd147e4f7567710cb53";
+const client_secret = "eoRD7iTanoFuWVU7mMA60eDuKC3KC5Vu0bodN/IM5nX92pjOMMegbgTiuPeBDgx0Ork/sWNc1JPw8qvlgh9IO0/o4rFG0MsLMZJv7ABZ2LEnkJd3ZDVr1HMtHMfsnzGk";
+const access_token = "592dd96332effca08626af2d7cac1518";
+
+let platform = "";
 
 onMounted(() => {
   onSnapshot(collection(db, "videos"), (querySnapshot) => {
@@ -83,6 +89,7 @@ onMounted(() => {
         thumbnail_default: doc.data().thumbnail_default,
         url: doc.data().url,
         duration: doc.data().duration,
+        platform: doc.data().platform,
       };
       videos.push(temp_video);
     });
@@ -93,8 +100,13 @@ function searchVideo(search) {
   let videoID = "";
   if (search.includes("https://www.youtube.com/watch?v=")) {
     videoID = search.split("https://www.youtube.com/watch?v=")[1];
+    platform = "youtube";
   } else if (search.includes("https://youtu.be/")) {
     videoID = search.split("https://youtu.be/")[1];
+    platform = "youtube";
+  } else if (search.includes("https://vimeo.com/")) {
+    videoID = search.split("https://vimeo.com/")[1];
+    platform = "vimeo";
   } else {
     activateWarning.value = true;
     warningColor.value = "red";
@@ -120,48 +132,102 @@ function searchVideo(search) {
   if (existed) {
     return;
   }
-  var notfound = false;
-  fetch(`${yt_url}id=${videoID}&key=${import.meta.env.VITE_API_KEY}&part=snippet`)
-  .then((response) => response.json())
-  .then((data) => {
-    if(data.items.length === 0) {
-      activateWarning.value = true;
-      warningColor.value = "red";
-      warningMessage.value = "No se encontró el video";
-      notfound = true;
-      return;
-    } else {
-      const tempID = data.items[0].id;
-      const video = {
-        date_added: new Date(),
-        title: data.items[0].snippet.title,
-        description: data.items[0].snippet.description,
-        thumbnail_high: data.items[0].snippet.thumbnails.high.url,
-        thumbnail_medium: data.items[0].snippet.thumbnails.medium.url,
-        thumbnail_default: data.items[0].snippet.thumbnails.default.url,
-        url: `https://www.youtube.com/watch?v=${tempID}`,
-        duration: "",
-      };
-      setDoc(doc(db, "videos", tempID), video);
-    }
-  })
-  .then(() => {
-    if (notfound) {
-      return;
-    }
-    fetch(`${yt_url}id=${videoID}&key=${import.meta.env.VITE_API_KEY}&part=contentDetails`)
-      .then((response) => response.json())
-      .then((data) => {
+  
+  if (platform == "youtube") {
+    var notfound = false;
+    fetch(`${yt_url}id=${videoID}&key=${import.meta.env.VITE_API_KEY}&part=snippet`)
+    .then((response) => response.json())
+    .then((data) => {
+      if(data.items.length === 0) {
+        activateWarning.value = true;
+        warningColor.value = "red";
+        warningMessage.value = "No se encontró el video";
+        notfound = true;
+        return;
+      } else {
         const tempID = data.items[0].id;
-        const duration = data.items[0].contentDetails.duration;
-        updateDoc(doc(db, "videos", tempID), {
-          duration: duration,
+        const video = {
+          date_added: new Date(),
+          title: data.items[0].snippet.title,
+          description: data.items[0].snippet.description,
+          thumbnail_high: data.items[0].snippet.thumbnails.high.url,
+          thumbnail_medium: data.items[0].snippet.thumbnails.medium.url,
+          thumbnail_default: data.items[0].snippet.thumbnails.default.url,
+          url: `https://www.youtube.com/watch?v=${tempID}`,
+          duration: "",
+          platform: "youtube",
+        };
+        if (data.items[0].snippet.liveBroadcastContent === "live") {
+          video.duration = "LIVE";
+        }
+        setDoc(doc(db, "videos", tempID), video);
+      }
+    })
+    .then(() => {
+      if (notfound) {
+        return;
+      }
+      fetch(`${yt_url}id=${videoID}&key=${import.meta.env.VITE_API_KEY}&part=contentDetails`)
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data);
+          const tempID = data.items[0].id;
+          var duration = data.items[0].contentDetails.duration;
+          console.log(duration);
+          if (duration === "P0D") {
+            updateDoc(doc(db, "videos", tempID), {
+              duration: "Live",
+            });
+          } else {
+            updateDoc(doc(db, "videos", tempID), {
+              duration: duration,
+            });
+          }
         });
-      });
-    activateWarning.value = true;
-    warningColor.value = "green";
-    warningMessage.value = "Video agregado correctamente";
-  })
+      activateWarning.value = true;
+      warningColor.value = "green";
+      warningMessage.value = "Video agregado correctamente";
+    })
+  } else if (platform == "vimeo"){
+    var notfound = false;
+    fetch(`${vm_url}${videoID}`, {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log(data);
+      if(data.length === 0) {
+        activateWarning.value = true;
+        warningColor.value = "red";
+        warningMessage.value = "No se encontró el video";
+        notfound = true;
+        return;
+      } else {
+        const tempID = data.uri.split("/")[2];
+        
+        const video = {
+          date_added: new Date(),
+          title: data.name,
+          description: data.description,
+          thumbnail_high: data.pictures.sizes[3].link,
+          thumbnail_medium: data.pictures.sizes[2].link,
+          thumbnail_default: data.pictures.sizes[1].link,
+          url: `https://vimeo.com/${tempID}`,
+          duration: data.duration,
+          platform: "vimeo",
+        };
+        console.log(video);
+        setDoc(doc(db, "videos", tempID), video);
+      }
+    })
+    .then(() => {
+      activateWarning.value = true;
+      warningColor.value = "green";
+      warningMessage.value = "Video agregado correctamente";
+    })
+  }
 };
 
 // Activate Modals

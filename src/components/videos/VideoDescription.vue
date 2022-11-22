@@ -1,18 +1,21 @@
 <template>
   <div class="description-modal-wrapper" @click.self="$emit('closeDescriptionModal')">
     <div class="description-modal">
-      <div class="description-modal-thumbnail" @click="$emit('playVideo', video)">
-        <img
-          class="dmt-thumbnail"
-          :src="video.thumbnail_high"
-          alt="video thumbnail"
-        />
-        <img
-          class="dmt-play"
-          src="@/assets/play.png"
-          alt="play button"
-        />
-        <div class="duration-container">
+      <div class="description-modal-thumbnail">
+        <iframe v-if="video.platform == 'youtube'"
+          :src="'https://www.youtube.com/embed/' + video.id + '?enablejsapi=1'"
+          title="YouTube video player"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+        ></iframe>
+        <iframe v-if="video.platform == 'vimeo'"
+          :src="'https://player.vimeo.com/video/' + video.id"
+          frameborder="0"
+          allow="autoplay; fullscreen; picture-in-picture"
+          allowfullscreen
+        ></iframe>
+        <div class="duration-container" v-if="video.platform === 'youtube'">
           <p>{{ processDuration(video.duration) }}</p>
         </div>
       </div>
@@ -90,7 +93,7 @@ const processDuration = (duration) => {
         opacity: 0.7;
       }
     }
-    .dmt-thumbnail {
+    iframe {
       width: 100%;
     }
     .dmt-play {

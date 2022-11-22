@@ -1,6 +1,6 @@
 <template>
   <div class="player-modal-wrapper" @click.self="$emit('closePlayerModal')">
-    <iframe
+    <iframe v-if="video.platform == 'youtube'"
       :src="'https://www.youtube.com/embed/' + video.id + '?enablejsapi=1'"
       title="YouTube video player"
       frameborder="0"
@@ -20,8 +20,6 @@ const props = defineProps({
   },
 });
 const emits = defineEmits(["closePlayerModal"]);
-
-
 </script>
 <style lang="scss" scoped>
 .player-modal-wrapper {
