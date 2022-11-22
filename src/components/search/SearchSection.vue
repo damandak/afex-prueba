@@ -7,9 +7,9 @@
         class="search-input"
         placeholder="Añadir"
         v-model="search"
-        @keyup.enter="searchVideo"
+        @keyup.enter="searchAndClear"
       />
-      <button class="search-button" @click="$emit('searchVideo', search)">
+      <button class="search-button" @click="searchAndClear">
         Añadir
       </button>
     </div>
@@ -21,6 +21,10 @@ import { ref } from "vue";
 const emit = defineEmits(["searchVideo"]);
 var search = ref("");
 
+function searchAndClear() {
+  emit("searchVideo", search.value);
+  search.value = "";
+}
 </script>
 <style scoped lang="scss">
 .search-wrapper {

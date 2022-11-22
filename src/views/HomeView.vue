@@ -197,8 +197,7 @@ function searchVideo(search) {
     })
     .then((response) => response.json())
     .then((data) => {
-      console.log(data);
-      if(data.length === 0) {
+      if(data.error) {
         activateWarning.value = true;
         warningColor.value = "red";
         warningMessage.value = "No se encontró el video";
@@ -206,7 +205,7 @@ function searchVideo(search) {
         return;
       } else {
         const tempID = data.uri.split("/")[2];
-        
+
         const video = {
           date_added: new Date(),
           title: data.name,
@@ -221,13 +220,12 @@ function searchVideo(search) {
         console.log(video);
         setDoc(doc(db, "videos", tempID), video);
       }
-    })
-    .then(() => {
       activateWarning.value = true;
       warningColor.value = "green";
       warningMessage.value = "Video agregado correctamente";
     })
   }
+  
 };
 
 // Activate Modals
